@@ -66,7 +66,7 @@ export const initCommand = new Command('init')
           {
             path: '/chatgpt',
             method: ['GET', 'OPTIONS', 'POST'],
-            upstreamUrl: 'http://localhost:3001/api/generatePrompt',
+            upstreamUrl: 'https://www.artemysai.xyz/api/generatePrompt',
             stripPrefix: false,
             forwardPrefix: false,
             responseHeaders: {

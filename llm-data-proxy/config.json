@@ -4,7 +4,7 @@
     {
       "path": "/chatgpt",
       "method": ["GET", "OPTIONS", "POST"],
-      "upstreamUrl": "http://host.docker.internal:3001/api/generatePrompt",
+      "upstreamUrl": "https://www.artemysai.xyz/api/generatePrompt",
       "stripPrefix": false,
       "forwardPrefix": false,
       "responseHeaders": {

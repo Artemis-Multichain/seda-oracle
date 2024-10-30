@@ -1,1 +1,1 @@
-web: bun start run --disable-proof
+web: bun start init && bun start run --disable-proof --config ./config.json

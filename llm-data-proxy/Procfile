@@ -1,1 +1,1 @@
-web: bun start run --disable-proof --config config.json
+web: bun start run --disable-proof --private-key-file data-proxy-private-key.json --config config.json

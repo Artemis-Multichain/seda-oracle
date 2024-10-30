@@ -1,0 +1,22 @@
+services:
+  seda-data-proxy:
+    build:
+      context: ../..
+      dockerfile: .build/docker/Dockerfile
+      args:
+        TARGET_ARCH: ${TARGET_ARCH:-bun-linux-arm64}
+    ports:
+      - "5384:5384"
+    environment:
+      API_KEY: ${API_KEY}
+    volumes:
+      - type: bind
+        source: ../../config.json
+        target: /app/config.json
+        read_only: true
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    driver: bridge

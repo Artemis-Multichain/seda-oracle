@@ -1,0 +1,23 @@
+imagePullSecrets: []
+
+image:
+  repository: ghcr.io/sedaprotocol/seda-data-proxy
+  tag: "v0.0.3"
+  pullPolicy: IfNotPresent
+  pullSecrets: {}
+  os: linux
+  arch: amd64
+
+service:
+  type: ClusterIP
+  port: 5384
+
+replicaCount: 1
+
+# export SEDA_PRIVATE_KEY=<KEY>
+# helm install my-release ./chart-name --set secret.sedaDataProxyPrivateKey=$SEDA_PRIVATE_KEY
+secret:
+  sedaDataProxyPrivateKey: ""
+
+# Uncomment for testing (itdisables request verification)
+# sedaProxyFlags: "--disable-proof"

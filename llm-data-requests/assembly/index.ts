@@ -4,7 +4,7 @@ import { OracleProgram } from '@seda-protocol/as-sdk/assembly';
 
 /**
  * Defines a prompt generation oracle program that:
- * 1. Fetches generated prompts from the seda data proxy during execution phase
+ * 1. Fetches generated prompts from the API during execution phase
  * 2. Selects a final prompt from multiple results in the tally phase
  */
 class PromptGenerator extends OracleProgram {

@@ -1,1 +1,1 @@
-web: bun start run --config config.json
+web: ls -la && pwd && bun start run --config ./config.json --disable-proof

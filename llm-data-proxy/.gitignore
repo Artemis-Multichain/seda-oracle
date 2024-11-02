@@ -173,7 +173,7 @@ dist
 
 # Finder (MacOS) folder config
 .DS_Store
-config.json
-# data-proxy-private-key.json
+# config.json
+data-proxy-private-key.json
 
 ubuntu-dind*

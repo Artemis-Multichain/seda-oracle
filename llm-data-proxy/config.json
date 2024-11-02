@@ -8,10 +8,9 @@
       "stripPrefix": false,
       "forwardPrefix": false,
       "responseHeaders": {
-        "Access-Control-Allow-Origin": "http://127.0.0.1:5500",
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Credentials": "true"
+        "Access-Control-Allow-Headers": "*"
       },
       "headers": {
         "x-api-key": "{$API_KEY}"

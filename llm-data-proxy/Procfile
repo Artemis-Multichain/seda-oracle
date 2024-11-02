@@ -1,1 +1,1 @@
-web: echo $CONFIG_JSON | base64 -d > config.json && bun start run
+web: bun start init && bun start run --config ./config.json

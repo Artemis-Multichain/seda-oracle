@@ -1,0 +1,1 @@
+web: bun start run  --config ./config.json

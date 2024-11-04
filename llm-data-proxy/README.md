@@ -63,7 +63,37 @@ The node will auto sign the response and include two headers: `x-seda-signature`
 
 ## Configuration
 
-The config file allows you to configure multiple routes:
+### Route Group
+
+All proxy routes are grouped under a single path prefix, by default this is "proxy". You can change this by specifying the `routeGroup` attribute in the config.json:
+
+```jsonc
+{
+  "routeGroup": "custom"
+  // Rest of config
+}
+```
+
+### Base URL
+
+In case you want to have software in front of the data proxy to handle the request (such as another proxy or an API management solution) it's possible that the public URL of the data proxy is different from the URL that the data proxy services. This causes a problem in the tamper proofing mechanism since the data proxy needs to sign the request URL, in order to prove that the overlay node did not change the URL. To prevent this you can specify the `baseURL` option in the config.json:
+
+```jsonc
+{
+  "routeGroup": "proxy",
+  "baseURL": "https://my-public-data-proxy.com"
+}
+```
+
+> [!IMPORTANT]
+> Just the protocol and host should be enough, no trailing slash.  
+> Should you do additional path rewriting in the proxy layer you can add that to the `baseURL` option, but this is not recommended.
+
+### Multiple routes
+
+A single data proxy can expose different data sources through a simple mapping in the config.json. The `routes` attribute takes an array of proxy route objects which can each have their own configuration.
+
+The two required attributes are `path` and `upstreamUrl`. These specify how the proxy should be called and how the proxy should call the upstream. By default a route is configured as `GET`, but optionally you can specify which methods the route should support with the `methods` attribute.
 
 ```jsonc
 {
@@ -71,28 +101,88 @@ The config file allows you to configure multiple routes:
   "routes": [
     {
       "path": "/eth-usd",
-      "upstreamUrl": "https://myapi.com/eth-usd",
-      // Default is GET
-      "headers": {
-        "x-api-key": "some-api-key"
-      }
+      "upstreamUrl": "https://myapi.com/eth-usd"
+      // Default method is GET
     },
     {
       "path": "/btc-usd",
       "upstreamUrl": "https://myapi.com/btc-usd",
-      // Allows for multiple method setting
-      "method": ["GET", "HEAD"],
+      // You can set multiple methods for the same route
+      "method": ["GET", "HEAD"]
+    }
+  ]
+}
+```
+
+#### Base URL per route
+
+In addition to specifying the `baseURL` at the root level you can also specify it per `route`. The `baseURL` at the `route` level will take precedence over one at the root level.
+
+```jsonc
+{
+  "routeGroup": "proxy",
+  "baseURL": "https://data-proxy.com",
+  "routes": [
+    {
+      // This route will use the "baseURL" from the root
+      "path": "/eth-usd",
+      "upstreamUrl": "https://myapi.com/eth-usd"
+    },
+    {
+      // This route will use its own "baseURL"
+      "baseURL": "https://btc.data-proxy.com",
+      "path": "/btc-usd",
+      "upstreamUrl": "https://myapi.com/btc-usd"
+    },
+  ],
+}
+```
+
+### Upstream Request Headers
+
+Should your upstream require certain request headers you can configure those in the `routes` object. All headers specified in the `headers` attribute will be sent to the upstream in addition to headers specified by the original request.
+
+```jsonc
+{
+  "routeGroup": "proxy",
+  "routes": [
+    {
+      "path": "/eth",
+      "upstreamUrl": "https://myapi.com/endpoint/eth",
       "headers": {
-        "x-api-key": "some-api-key"
+        "x-api-key": "MY-API-KEY",
+        "accept": "application/json"
       }
     }
   ]
 }
 ```
 
-### Variables
+### Environment Variable Injection
 
-The config.json has support for using variable routes by using `:varName`:
+Sometimes you don't want to expose your API key in a config file, or you have multiple environments running. The Data Proxy node has support for injecting environment variables through the `{$MY_ENV_VARIABLE}` syntax:
+
+```jsonc
+{
+  "routeGroup": "proxy",
+  "routes": [
+    {
+      "path": "/odds",
+      "upstreamUrl": "https://swapi.dev/api/my-odds",
+      "headers": {
+        "x-api-key": "{$SECRET_API_KEY}"
+      }
+    }
+  ]
+}
+```
+
+> [!WARNING]
+> Environment variables are evaluated during startup of the data proxy. If it detects variables in the config which aren't present in the environment the process will exit with an error message detailing which environment variable it was unable to find.
+
+### Path Parameters
+
+The `routes` objects have support for path parameter variables and forwarding those to the upstream. Simply declare a variable in your path with the `:varName:` syntax and reference them in the upstreamUrl with the `{:varName:}` syntax. See below for an example:
 
 ```jsonc
 {
@@ -101,41 +191,15 @@ The config.json has support for using variable routes by using `:varName`:
     {
       "path": "/:coinA/:coinB",
       // Use {} to inject route variables
-      "upstreamUrl": "https://myapi.com/{:coinA}-{:coinB}",
-      "headers": {
-        "x-api-key": "some-api-key",
-        // Can also be injected in the header
-        "x-custom": "{:coinA}"
-      }
+      "upstreamUrl": "https://myapi.com/{:coinA}-{:coinB}"
     }
   ]
 }
 ```
 
-### JSON Path
+### Forwarding Response Headers
 
-If you don't want to expose all API info you can use `jsonPath` to reduce the response:
-
-```jsonc
-{
-  "routeGroup": "proxy",
-  "routes": [
-    {
-      "path": "/planets/:planet",
-      "upstreamUrl": "https://swapi.dev/api/planets/{:planet}",
-      // Calling the API http://localhost:5384/proxy/planets/1 will only return "Tatooine" and omit the rest
-      "jsonPath": "$.name",
-      "headers": {
-        "x-api-key": "some-api-key"
-      }
-    }
-  ]
-}
-```
-
-### Forwarding headers
-
-By default the data proxy node will only forward the `content-type` as a response. This can be configured to include more headers if desired:
+By default the data proxy node will only forward the `content-type` header from the upstream response. If required you can specify which other headers the proxy should forward to the requesting client:
 
 ```jsonc
 {
@@ -154,27 +218,7 @@ By default the data proxy node will only forward the `content-type` as a respons
 }
 ```
 
-### Environment variables injection
-
-Sometimes you don't want to expose your API key in a config file, or you have multiple environments running. The Data Proxy node has support for injecting environment variables through `{$MY_ENV_VARIABLE}`:
-
-```jsonc
-{
-  "routeGroup": "proxy",
-  "routes": [
-    {
-      // Everything will be injected in the URL
-      "path": "/*",
-      "upstreamUrl": "https://swapi.dev/api/{*}",
-      "headers": {
-        "x-api-key": "{$SECRET_API_KEY}"
-      }
-    }
-  ]
-}
-```
-
-### Wildcard routes
+### Wildcard Routes
 
 The Data Proxy node has support for wildcard routes, which allows you to quickly expose all your APIs:
 
@@ -183,7 +227,7 @@ The Data Proxy node has support for wildcard routes, which allows you to quickly
   "routeGroup": "proxy",
   "routes": [
     {
-      // Everything will be injected in the URL
+      // The whole path will be injected in the URL
       "path": "/*",
       "upstreamUrl": "https://swapi.dev/api/{*}",
       "headers": {
@@ -194,16 +238,36 @@ The Data Proxy node has support for wildcard routes, which allows you to quickly
 }
 ```
 
-## Status endpoints
+### JSON Path
+
+If you don't want to expose all API info you can use `jsonPath` to return a subset of the response:
+
+```jsonc
+{
+  "routeGroup": "proxy",
+  "routes": [
+    {
+      "path": "/planets/:planet",
+      "upstreamUrl": "https://swapi.dev/api/planets/{:planet}",
+      // Calling the API http://localhost:5384/proxy/planets/1 will only return "Tatooine" and omit the rest
+      "jsonPath": "$.name",
+      "headers": {
+        "x-api-key": "some-api-key"
+      }
+    }
+  ]
+}
+```
+
+### Status Endpoint
 
 The Data Proxy node has support for exposing status information through some endpoints. This can be used to monitor the health of the node and the number of requests it has processed.
 
 The status endpoint has two routes:
 
-- `/<statusEndpointsRoot>/health`  
-  Returns a JSON object with the following structure:
-
-  ```json
+- `/status/health`  
+  Returns a JSON object with the following strucuture:
+  ```jsonc
   {
     "status": "healthy",
     "metrics": {
@@ -213,20 +277,19 @@ The status endpoint has two routes:
     }
   }
   ```
-
-- `/<statusEndpointsRoot>/pubkey`  
+- `/status/pubkey`  
   Returns the public key of the node.
-  ```json
+  ```jsonc
   {
     "pubkey": "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f"
   }
   ```
 
-### Configuration
+#### Status Configuration
 
-The status endpoints can be configured in the config file:
+The status endpoints can be configured in the config file under the statusEndpoints attribute:
 
-```json
+```jsonc
 {
   // Other config...
   "statusEndpoints": {
@@ -243,3 +306,110 @@ The status endpoints can be configured in the config file:
 - `root`: Root path for the status endpoints. Defaults to `status`.
 - `apiKey`: Optionally secure the status endpoints with an API key. The `header` attribute is the header key that needs to be set, and `secret` is the value that it needs to be set to.  
   The `statusEndpoints.apiKey.secret` attribute supports the `{$MY_ENV_VARIABLE}` syntax for injecting a value from the environment during start up.
+
+## Deployment
+
+The SEDA Data Proxy can be deployed in several ways:
+
+- [Local Installation](#set-up) (shown above)
+- [Docker Deployment](#docker-deployment)
+- [Kubernetes Deployment](#kubernetes-deployment)
+
+### Docker Deployment
+
+Pull the latest image:
+
+```bash
+docker pull ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3
+```
+
+Initialize configuration and keys (choose one option):
+
+```bash
+# Option A: Save files to local directory
+docker run \
+  -v $PWD/config:/app/config \
+  ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 \
+  init -c ./config/config.json -pkf config/data-proxy-private-key.json
+
+# Option B: Print to console for manual setup
+docker run ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 init --print
+```
+
+Register your node:
+
+```bash
+# Option A: Using private key file
+docker run \
+  -v $PWD/config/data-proxy-private-key.json:/app/data-proxy-private-key.json \
+  ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 \
+  register <seda-address> <seda-amount>
+
+# Option B: Using environment variable
+docker run \
+  --env SEDA_DATA_PROXY_PRIVATE_KEY=$SEDA_DATA_PROXY_PRIVATE_KEY \
+  ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 \
+  register <seda-address> <seda-amount>
+```
+
+Run the proxy:
+
+```bash
+# Option A: Using private key file
+docker run -d \
+  --name seda-data-proxy \
+  -p 5384:5384 \
+  -v $PWD/config/config.json:/app/config.json \
+  -v $PWD/config/data-proxy-private-key.json:/app/data-proxy-private-key.json \
+  ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 \
+  run --disable-proof
+
+# Option B: Using environment variable
+docker run -d \
+  --name seda-data-proxy \
+  -p 5384:5384 \
+  -v $PWD/config/config.json:/app/config.json \
+  --env SEDA_DATA_PROXY_PRIVATE_KEY=$SEDA_DATA_PROXY_PRIVATE_KEY \
+  ghcr.io/sedaprotocol/seda-data-proxy:v0.0.3 \
+  run --disable-proof
+```
+
+> [!NOTE]
+> The config.json file must always be mounted as a volume.
+
+> [!IMPORTANT]
+> Remove `--disable-proof` in production environments
+
+### Kubernetes Deployment
+
+For production deployments on Kubernetes, we provide a Helm chart in the `helm/` directory. Here's a basic setup:
+
+Basic Helm configuration example:
+
+```yaml
+# values.yaml
+
+# ... other configuration ...
+
+secret:
+  sedaDataProxyPrivateKey: "" # Will be set via CLI
+
+# Remove this flag in production - it disables request verification
+sedaProxyFlags: "--disable-proof"
+
+sedaProxyConfig:
+  routes:
+    - path: "/*"
+      upstreamUrl: "https://swapi.dev/api/"
+      methods:
+        - GET
+```
+
+Deploy using Helm from the project root:
+
+```bash
+helm install my-proxy ./helm --set secret.sedaDataProxyPrivateKey=$SEDA_DATA_PROXY_PRIVATE_KEY
+```
+
+> [!NOTE]  
+> The above is a minimal example. Your specific deployment may require additional configuration for services, ingress, resources, and security settings based on your infrastructure requirements. Please consult with your infrastructure team for production deployments.

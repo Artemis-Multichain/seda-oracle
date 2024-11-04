@@ -1,15 +1,12 @@
 services:
   seda-data-proxy:
-    command: ['run', '--disable-proof']
     build:
       context: ../..
       dockerfile: .build/docker/Dockerfile
       args:
         TARGET_ARCH: ${TARGET_ARCH:-bun-linux-arm64}
     ports:
-      - '5384:5384'
-    environment:
-      API_KEY: 'N97FlFhQkTy3OzibNZCZi4SPi8t61OZTW7ZJ9zNVFdEH7r1rAAb2ikjxwRaLBfR1'
+      - "5384:5384"
     ### Provide the private key if available
     # environment:
     #   # Provide the private key if available
@@ -17,16 +14,16 @@ services:
     #
     ### Provide the config file if available
     volumes:
-      - type: bind
-        source: ../../config.json
-        target: /app/config.json
-        read_only: true
-        consistency: cached
-      - type: bind
-        source: ../../data-proxy-private-key.json
-        target: /app/data-proxy-private-key.json
-        read_only: true
-        consistency: cached
+    - type: bind
+      source: ../../config.json
+      target: /app/config.json
+      read_only: true
+      consistency: cached
+    - type: bind
+      source: ../../data-proxy-private-key.json
+      target: /app/data-proxy-private-key.json
+      read_only: true
+      consistency: cached
     networks:
       - proxy-network
 

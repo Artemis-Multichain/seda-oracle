@@ -3,6 +3,7 @@ import {
   Console,
   Process,
   httpFetch,
+  proxyHttpFetch,
 } from '@seda-protocol/as-sdk/assembly';
 
 /**
@@ -17,17 +18,20 @@ export function executionPhase(): void {
 
   // Note: We need to encode the user prompt for URL safety
   const encodedPrompt = encodeURIComponent(userPrompt);
-  const response = httpFetch(
+  const response = proxyHttpFetch(
     `https://seda-oracle-production.up.railway.app/proxy/chatgpt?userPrompt=${encodedPrompt}`
   );
 
   // Check if the HTTP request was successful
   if (!response.ok) {
+    const errorMsg = response.bytes.toUtf8String();
     Console.error(
-      `HTTP Response failed: ${response.status.toString()} - ${response.bytes.toUtf8String()}`
+      `HTTP Response failed: ${response.status.toString()} - ${errorMsg}`
     );
     Process.error(
-      Bytes.fromUtf8String('Error while fetching generated prompt')
+      Bytes.fromUtf8String(
+        `Failed to fetch generated prompt: HTTP ${response.status.toString()} - ${errorMsg}`
+      )
     );
     return;
   }

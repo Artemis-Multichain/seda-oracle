@@ -1,5 +1,6 @@
 {
   "routeGroup": "proxy",
+  "baseURL": "https://seda-oracle-production.up.railway.app",
   "routes": [
     {
       "path": "/chatgpt",

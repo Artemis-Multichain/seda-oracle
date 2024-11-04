@@ -12,6 +12,14 @@ async function main() {
   const signingConfig = buildSigningConfig({});
   const signer = await Signer.fromPartial(signingConfig);
 
+  // Get public key and address
+  const accounts = await signer.getSigner().getAccounts();
+  const address = accounts[0].address;
+  const publicKey = accounts[0].pubkey;
+
+  console.log('Derived Address:', address);
+  console.log('Derived Public Key:', Buffer.from(publicKey).toString('hex'));
+
   console.log('Posting and waiting for a result, this may take a lil while..');
 
   const result = await postAndAwaitDataRequest(

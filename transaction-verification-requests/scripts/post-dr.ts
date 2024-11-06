@@ -1,4 +1,3 @@
-// scripts/post-dr.ts
 import {
   Signer,
   buildSigningConfig,
@@ -37,13 +36,7 @@ async function main() {
     {}
   );
 
-  // Display the result
-  console.log('\nVerification Result:');
-  console.log(result.result.toString());
-  console.table({
-    'Chain ID': chainId,
-    'Transaction Hash': txHash,
-  });
+  console.table(result);
 }
 
 main();

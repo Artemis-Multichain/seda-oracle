@@ -32,7 +32,7 @@ export function executionPhase(): void {
     `Fetching transaction status for chain ${chainId} and tx ${txHash}`
   );
 
-  const url = `https://seda-oracle-production-317f.up.railway.app/proxy/?chainid=${chainId}&module=transaction&action=gettxreceiptstatus&txhash=${txHash}`;
+  const url = `https://seda-oracle-production-317f.up.railway.app/proxy?chainid=${chainId}&module=transaction&action=gettxreceiptstatus&txhash=${txHash}`;
   Console.log(`Request URL: ${url}`);
 
   const response = proxyHttpFetch(url);

@@ -3,7 +3,7 @@
   "baseURL": "https://seda-oracle-production-317f.up.railway.app",
   "routes": [
     {
-      "path": "/",
+      "path": "/etherscan",
       "method": ["GET", "OPTIONS", "POST"],
       "upstreamUrl": "https://api.etherscan.io/v2/api",
       "stripPrefix": false,

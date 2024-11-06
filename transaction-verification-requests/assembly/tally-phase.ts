@@ -1,4 +1,4 @@
-import { Tally, Process, Bytes, u128, Console } from '@seda-protocol/as-sdk';
+import { Tally, Process, Bytes, u128, Console } from "@seda-protocol/as-sdk/assembly";
 
 export function tallyPhase(): void {
   const reveals = Tally.getReveals();

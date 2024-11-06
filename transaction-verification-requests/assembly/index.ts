@@ -1,6 +1,6 @@
-import { executionPhase } from './execution-phase.js';
-import { tallyPhase } from './tally-phase.js';
-import { OracleProgram } from '@seda-protocol/as-sdk';
+import { executionPhase } from './execution-phase';
+import { tallyPhase } from './tally-phase';
+import { OracleProgram } from '@seda-protocol/as-sdk/assembly';
 
 /**
  * Defines a transaction verification oracle program that performs two main tasks:

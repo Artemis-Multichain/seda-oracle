@@ -2,7 +2,7 @@ import {
   Bytes,
   Console,
   Process,
-  httpFetch,
+  proxyHttpFetch,
 } from '@seda-protocol/as-sdk/assembly';
 
 @json
@@ -31,7 +31,7 @@ export function executionPhase(): void {
   const chainId = drInputs[0];
   const txHash = drInputs[1];
 
-  const response = httpFetch(
+  const response = proxyHttpFetch(
     `https://seda-oracle-production-317f.up.railway.app/proxy/etherscan?chainid=${chainId}&module=transaction&action=gettxreceiptstatus&txhash=${txHash}`
   );
 

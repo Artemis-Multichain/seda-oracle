@@ -1,0 +1,21 @@
+{
+  "routeGroup": "proxy",
+  "baseURL": "https://seda-oracle-production-317f.up.railway.app",
+  "routes": [
+    {
+      "path": "/",
+      "method": ["GET", "OPTIONS", "POST"],
+      "upstreamUrl": "https://api.etherscan.io/v2/api",
+      "stripPrefix": false,
+      "forwardPrefix": false,
+      "responseHeaders": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*"
+      },
+      "headers": {
+        "x-api-key": "{$API_KEY}"
+      }
+    }
+  ]
+}

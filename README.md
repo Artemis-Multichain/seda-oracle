@@ -35,7 +35,10 @@ The project consists of several key components:
 
 1. **Data Proxies**
    - `llm-data-proxy`: Handles AI prompt generation requests
+
+**NOTE**: The llm data proxy is used to interact with our deployed openAI wrapper. The code for the wrapper can be found [here](https://github.com/Artemis-Multichain/frontend/blob/master/app/api/generatePrompt/route.ts) in the frontend
    - `transaction-verification-proxy`: Manages transaction verification data
+
 
 2. **Data Request Programs**
    - `llm-data-requests`: WASM programs for prompt generation

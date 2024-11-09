@@ -58,7 +58,7 @@ Each component follows a modular architecture with:
 - Bun runtime
 - Docker (for containerized deployment)
 - Access to **SEDA** network (testnet/mainnet)
-- Ethereum wallet with **SEDA** tokens
+- Keplr wallet with **SEDA** devnet tokens
 
 ### ⚙️ Installation
 

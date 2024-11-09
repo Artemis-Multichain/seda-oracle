@@ -16,7 +16,6 @@ export function tallyPhase(): void {
   }
 
   // Take the first valid result
-  // You could implement more sophisticated selection logic if needed
   const firstResult = reveals[0].reveal;
 
   // Log the selected result for debugging

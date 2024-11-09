@@ -140,7 +140,7 @@ bun run post-dr
 Example transaction verification:
 ```bash
 cd transaction-verification-requests
-bun run post-dr --tx-hash 0x123... --chain-id 1
+bun run post-dr 
 ```
 
 ### 🧪 Testing
